@@ -23,7 +23,6 @@
 
 import sys, time
 import XenAPI
-from datetime import datetime
 from datetime import date
 from string import Template
 
