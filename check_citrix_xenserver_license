@@ -23,6 +23,7 @@
 
 import sys, time
 import XenAPI
+from datetime import datetime
 from datetime import date
 from string import Template
 
@@ -40,11 +41,11 @@ def main(session):
     hosts = session.xenapi.host.get_all()
     host = hosts[0]
     record = session.xenapi.host.get_record(host)
-    expires = record["license_params"]["expiry"] 
-    expires_y = expires[0:4]
-    expires_m = expires[4:6]
-    expires_d = expires[6:8]
-    expires = date(int(expires_y), int(expires_m), int(expires_d))
+    # Get the date part of the string
+    expires = time.strptime(record["license_params"]["expiry"][0:8], 
+		    "%Y%m%d")[0:3]
+    # create date object for finding difference in days
+    expires = date(int(expires[0]), int(expires[1]), int(expires[2]))
     expire_days = (expires - date.today()).days
     display = Template('XenServer License: $status | expire_days=%s' %expire_days)
     if expire_days > warn_days:
