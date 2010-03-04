@@ -1,1 +1,4 @@
 Nagios plugin that will check if a Citrix XenServer license is near expiring.
+
+This script can run either on the xenserver itself or on another host. Be sure to install the XenAPI module  if your running the check from another host.
+
