@@ -1,0 +1,72 @@
+#!/usr/bin/env python
+# Copyright (c) 2010, Nick Anderson <nick@cmdln.org>
+# All rights reserved.
+ 
+ # Redistribution and use in source and binary forms, with or without
+ # modification, are permitted provided that the following conditions are met:
+ # * Redistributions of source code must retain the above copyright
+ # notice, this list of conditions and the following disclaimer.
+ # * Redistributions in binary form must reproduce the above copyright
+ # notice, this list of conditions and the following disclaimer in the
+ # documentation and/or other materials provided with the distribution.
+ #
+ # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ # ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ # WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ # DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+ # DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ # (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ # LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ # ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+import sys, time
+import XenAPI
+from datetime import date
+from string import Template
+
+XenServer_url = 'http://localhost'
+XenServer_username = 'root'
+XenServer_password = ''
+warn_days = 30 
+critical_days = 10
+
+def main(session):
+    """
+    Get number of days until license expires 
+    Return 0 if license not expired, 2 if expired
+    """
+    hosts = session.xenapi.host.get_all()
+    host = hosts[0]
+    record = session.xenapi.host.get_record(host)
+    expires = record["license_params"]["expiry"] 
+    expires_y = expires[0:4]
+    expires_m = expires[4:6]
+    expires_d = expires[6:8]
+    expires = date(int(expires_y), int(expires_m), int(expires_d))
+    expire_days = (expires - date.today()).days
+    display = Template('XenServer License: $status | expire_days=%s' %expire_days)
+    if expire_days > warn_days:
+        print display.substitute(status='OK') 
+        sys.exit(0)
+    elif expire_days <= warn_days:
+        print display.substitute(status='Expiring in %s days'%expire_days) 
+	if expire_days <= critical_days:
+            sys.exit(2)
+        else:
+            sys.exit(1)
+    else:
+        print display.substitute(status='Unknown')
+	sys.exit(3)
+
+if __name__ == "__main__":
+    # First acquire a valid session by logging in:
+    session = XenAPI.Session(XenServer_url)
+    try:
+        session.xenapi.login_with_password(XenServer_username, XenServer_password)
+    except:
+        print 'XenServer License: Unknown, could not establish session'
+	sys.exit(3)
+
+    main(session)
