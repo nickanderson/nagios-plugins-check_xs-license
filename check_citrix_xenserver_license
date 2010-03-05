@@ -39,7 +39,7 @@ __version__ = "1.1"
 __author__ = "Nick Anderson <nick@cmdln.org>"
 __website__ = "http://github.com/nickanderson/check_citrix_xenserver_license"
 
-def main(session):
+def main(session, options):
     """
     Get number of days until license expires 
     Return 0 if license not expired, 2 if expired
@@ -55,14 +55,14 @@ def main(session):
     expire_days = (expires - date.today()).days
     display = Template('XenServer License: $status | expire_days=%s' 
             %expire_days)
-    if expire_days > warn_days:
+    if expire_days > options.warning_days:
         print display.substitute(status='OK') 
         session.xenapi.session.logout()
         sys.exit(0)
 
-    elif expire_days <= warn_days:
+    elif expire_days <= options.warning_days:
         print display.substitute(status='Expiring in %s days'%expire_days) 
-        if expire_days <= critical_days:
+        if expire_days <= options.critical_days:
             session.xenapi.session.logout()
             sys.exit(2)
         else:
@@ -78,6 +78,7 @@ if __name__ == "__main__":
     op = optparse.OptionParser("usage: %prog [options]", 
             version = "%%prog v%s\nAuthor: %s\nWebsite: %s" % 
             (__version__, __author__, __website__))
+
     og_sess = optparse.OptionGroup(op, "Session Options")
     og_sess.add_option('--server',
             dest='server',
@@ -90,9 +91,22 @@ if __name__ == "__main__":
             help="xenserver password")
     op.add_option_group(og_sess)
 
+    og_nag = optparse.OptionGroup(op, "Nagios Options")
+    og_nag.add_option('-c',
+            dest='critical_days',
+            help="critical threshold for days (default: %default)")
+    og_nag.add_option('-w',
+            dest='warning_days',
+            help="warn threshold for days (default: %default)")
+    op.add_option_group(og_nag)
+
+
+
     op.set_defaults(server='localhost',
             username = 'root',
-            password = '')
+            password = '',
+            warning_days = 30,
+            critical_days = 10)
 
     # parse and validate
     (options, args) = op.parse_args()
@@ -107,4 +121,4 @@ if __name__ == "__main__":
         print 'XenServer License: Unknown, could not establish session'
         sys.exit(3)
 
-    main(session)
+    main(session, options)
