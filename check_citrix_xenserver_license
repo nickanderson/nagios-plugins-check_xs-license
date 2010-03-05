@@ -31,10 +31,6 @@ from string import Template
 
 import XenAPI
 
-warn_days = 30 
-critical_days = 10
-
-
 __version__ = "1.1"
 __author__ = "Nick Anderson <nick@cmdln.org>"
 __website__ = "http://github.com/nickanderson/check_citrix_xenserver_license"
@@ -99,8 +95,6 @@ if __name__ == "__main__":
             dest='warning_days',
             help="warn threshold for days (default: %default)")
     op.add_option_group(og_nag)
-
-
 
     op.set_defaults(server='localhost',
             username = 'root',
