@@ -2,7 +2,7 @@
 # Preamble 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
 %define name        nagios-plugins-check_xs-license
-%define version     1.3
+%define version     1.2
 %define release     1
 %define buildroot %{_builddir}/%{name}-%{version}-%{release}-ROOT
 
@@ -21,7 +21,6 @@ Distribution: Centos
 Packager:     Nick Anderson <nick@cmdln.org> 
 BuildArch:    noarch
 
-BuildRequires: git-core
 BuildRoot: %{buildroot}
 
 %description 
