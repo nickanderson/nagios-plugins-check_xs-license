@@ -58,11 +58,11 @@ def main(session, options):
 
     elif expire_days <= options.warning_days:
         if expire_days <= options.critical_days:
-            print display.substitute(status='WARNING Expiring in %s days'%expire_days) 
+            print display.substitute(status='CRITICAL Expiring in %s days'%expire_days) 
             session.xenapi.session.logout()
             sys.exit(2)
         else:
-            print display.substitute(status='CRITICAL Expiring in %s days'%expire_days) 
+            print display.substitute(status='WARNING Expiring in %s days'%expire_days) 
             session.xenapi.session.logout()
             sys.exit(1)
     else:
