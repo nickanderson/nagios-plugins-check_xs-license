@@ -47,17 +47,19 @@ def main(session, options):
     expires = time.strptime(record["license_params"]["expiry"][0:8], 
 		    "%Y%m%d")[0:3]
     # create date object for finding difference in days
-    expires = date(int(expires[0]), int(expires[1]), int(expires[2]))
-    expire_days = (expires - date.today()).days
+    expires_on = date(int(expires[0]), int(expires[1]), int(expires[2]))
+    expire_days = (expires_on - date.today()).days
     display = Template('XenServer License: $status | expire_days=%s' 
             %expire_days)
-    if expire_days > options.warning_days:
+
+    if int(expire_days) > int(options.warning_days):
         print display.substitute(status='OK') 
         session.xenapi.session.logout()
         sys.exit(0)
 
-    elif expire_days <= options.warning_days:
-        if expire_days <= options.critical_days:
+    # If number of days until expire is less than warning
+    elif int(expire_days) <= int(options.warning_days):
+        if int(expire_days) <= int(options.critical_days):
             print display.substitute(status='CRITICAL Expiring in %s days'%expire_days) 
             session.xenapi.session.logout()
             sys.exit(2)
